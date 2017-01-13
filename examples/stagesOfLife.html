@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>stages of life example</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script type="text/javascript">
+            debugger;
+            
+            var kindPerson = {
+                age: 0,
+                name: null,
+                
+                init: function (name, age) {
+                    this.super();
+                    
+                    this.name = name;
+                    this.age = age;
+                },                               
+                
+                getOld: function () {
+                    this.age += 1;
+                    this.fire('changeState');
+                }
+            }.basedOn(onto.kind);
+
+
+            var phaseChild = {
+                phaseGroupId: 'stages-of-life',
+                
+                talk: function () {
+                    console.log('gu gu');
+                }
+            }.basedOn(onto.phase)
+             .specialize(kindPerson)
+             .on('beforeBecome:target', function (e) {
+                 if (e.sender.age > 17) e.preventAction();
+             });
+             
+             
+            var phaseAdult = {
+                phaseGroupId: 'stages-of-life',
+                
+                talk: function () {
+                    console.log('hi');
+                }
+            }.basedOn(onto.phase)
+             .specialize(kindPerson)
+             .on('beforeBecome:target', function (e) {
+                 if (e.sender.age <= 17
+                    || e.sender.age > 60) e.preventAction();
+             });
+
+            var phaseElder = {
+                phaseGroupId: 'stages-of-life',
+                
+                talk: function () {
+                    console.log('Zzzz...');
+                }
+            }.basedOn(onto.phase)
+             .specialize(kindPerson)
+             .on('beforeBecome:target', function (e) {
+                 if (e.sender.age <= 60 ) e.preventAction();
+             });
+        
+
+
+            //instanciacoes
+            jean = kindPerson.new('Jean Carl', 17);
+            
+            jean.talk();
+            console.log(jean.isA(phaseChild));
+            
+            jean.getOld();
+            jean.talk();
+            console.log(jean.isA(phaseChild));
+            console.log(jean.isA(phaseAdult));
+            
+            
+        </script>
+        
+    </body>
+</html>

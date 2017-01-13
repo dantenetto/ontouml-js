@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>battle roles</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <img src="battle-roles.png">
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script type="text/javascript">
+            debugger;
+            
+            var kindCharacter = {
+                name: null,
+                hp: null,
+                strength: null,
+                
+                init: function (name, strength) {
+                    this.super();
+
+                    this.name = name;
+                    this.hp = 100;
+                    this.strength = strength;
+                }
+            }.basedOn(onto.kind);
+            
+            var roleFighter = {
+                powerBonus: 0,
+                
+                hit: function (target) {
+                    if (!target.dodge()) {
+                        target.hp -= (this.strength + this.powerBonus);
+                        console.log(this.name + ' hitted ' + target.name + '(' + target.hp + ')');
+                    } else {
+                        console.log(target.name + ' dodged ' + this.name);
+                    }
+                }
+            }.basedOn(onto.role)
+             .specialize(kindCharacter);
+            
+            var roleChallenger = {
+                powerBonus: 1,
+                
+                dodge: function () {
+                    return (this.battle.time % 3) 
+                        && ((Math.random() * 10) < this.powerBonus);
+                }
+            }.basedOn(roleFighter);
+            
+            var roleChallenged = {
+                powerBonus: -3,
+                
+                dodge: function () {
+                    return ((Math.random() * 200) < this.hp)
+                        && (this.battle.time % 2);
+                }
+            }.basedOn(roleFighter);
+            
+         
+            var relatorBattle = {
+                time: null,
+                relatorPropertyId: 'battle',
+                _roleSets: {
+                    challengerOf: roleChallenger,
+                    challengedOf: roleChallenged
+                },
+                
+                init: function (params) {
+                    this.time = 10;
+                    
+                    this.super(params);
+                },
+                
+                nextRound: function () {
+                    this.time -= 1;
+                    
+                    if (this.time <= 0) {
+                        console.log('battle finished');
+                    }
+                }
+            }.basedOn(onto.relator);
+            
+            
+            
+            //instanciações
+            var jonh = kindCharacter.new('Jonh', 10);
+            var paul = kindCharacter.new('Paul', 8);
+            
+            
+            var battle = relatorBattle.new({
+                challengerOf: paul,
+                challengedOf: jonh
+            });
+            
+            battle.underThisRelation(function () {
+                
+                while (battle.time) {
+                    jonh.hit(paul);
+                    paul.hit(jonh);
+                    
+                    battle.nextRound();
+                }
+            });
+            
+            if (jonh.hp > paul.hp) {
+                console.log("Winner:" + jonh.name);
+            } else {
+                console.log("Winner:" + paul.name);
+            }
+            
+        </script>
+        
+    </body>
+</html>

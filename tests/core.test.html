@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>core test</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+		<pre id="tests-results"></pre>
+
+        <script src="../core.js"></script>
+        <script type="text/javascript">
+            var first, second, third, fourth, fifth,
+				writeResult;
+
+			//arrange
+            first = {
+                attrA: '1',
+
+                init: function (p1) {                    
+                    this.attrA = p1 || this.attrA;
+                }
+            };
+
+            
+			second = {
+                attrB: '2',
+
+                init: function (p1, p2) {
+                    this.super(p1);
+                    
+                    this.attrB = p2 || this.attrB;
+                }
+            }.basedOn(first);
+			
+			
+			third = {
+				attrC: '3'
+			}.basedOn(second);
+			
+			
+			fourth = {
+				attrD: '4',
+			
+				init: function (p1, p2, p3, p4) {
+                    this.attrC = p3 || this.attrC;
+                    this.attrD = p4 || this.attrD;
+                    
+					this.super(p1, p2);
+				}
+			}.basedOn(third);
+			
+			
+			fifth = {
+				attrE: '5',
+				
+				init: function (p5) {
+					this.attrE = p5;
+				}
+			}.basedOn(fourth);
+			
+			//==========================================================
+			
+			function testNew() {
+				var description = 'ao ser instanciado com o método new, um objeto deve ser inicializado pelo init, caso o objeto possua esse método',
+					obj;
+				
+				//act
+				obj = first.new('test');
+				
+				//assert
+				if (obj.attrA !== 'test') writeResult(arguments.callee, description, 'ERRO ao invocar o init.');
+				else writeResult(arguments.callee, description, 'ok');
+			}
+			
+			
+			function testSuper() {
+				var description = 'ao ser instanciado, se usado o método super dentro do init atual, deve ser invocado o init ancestral.',
+					obj;
+				
+				//act
+				obj = second.new('a', null);
+				
+				//assert
+				if (obj.attrA !== 'a')
+					writeResult(arguments.callee, description, 'ERRO o método super não foi invocado com sucesso');
+				else
+					writeResult(arguments.callee, description, 'ok');
+			}
+			
+			function testSuperVazio() {
+				var description = 'ao ser instanciado, se o objeto pai na cadeia de protótipos não possuir o método init, o método init do pai deve ser chamado ao chamar o método super.',
+					obj;
+				
+				//act
+				obj = fourth.new('a', 'b', 'c', null);
+				
+				//assert
+				if (obj.attrA !== 'a' || obj.attrB !== 'b' || obj.attrC !== 'c' )
+					writeResult(arguments.callee, description, 'ERRO o método init mais alto não foi atingido com a invocação do super');
+				else
+					writeResult(arguments.callee, description, 'ok');
+			}
+			
+			function testInitSemSuper() {
+				var description = 'se um método init não invocar o super, os métodos inits mais altos na cadeia não devem ser invocados.',
+					obj;
+				
+				//act
+				obj = fifth.new();
+				
+				//assert
+				if (obj.attrA !== '1' || obj.attrB !== '2' || obj.attrC !== '3' || obj.attrD !== '4')
+					writeResult(arguments.callee, description, 'ERRO método init mais alto na cadeia foi invocado.');
+				else
+					writeResult(arguments.callee, description, 'ok');
+			}
+			
+			//==========================================================
+
+			window.addEventListener('load', function () {
+				var testConsole = document.getElementById('tests-results');
+				
+				writeResult = function (testFn, description, resul) {
+					testConsole.innerHTML += 
+						'\n\n' + 
+						'-><strong>' + testFn.name + '</strong>:\n' +
+						description + '\n' + resul;
+				};
+				
+				//rodar os testes
+				testNew();
+				testSuper();
+				testSuperVazio();
+				testInitSemSuper();
+			});
+			
+        </script>
+        
+    </body>
+</html>

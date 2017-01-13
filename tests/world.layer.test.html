@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>world layer test</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script src="../domain.layer.js"></script>
+        <script src="../world.layer.js"></script>
+        
+        <script type="text/javascript">
+            var schoolDomain, worldLayer;
+            
+            schoolDomain = domain.new({
+                kinds: {
+                    item: {
+                        set: {
+                            type: null,
+                        }
+                    },
+                    person: {
+                        set: {
+                            hp: null,
+                            name: null,
+                            birthday: null,
+                            gender: null,
+                            
+                            init: function (name, birthday, gender) {
+                                this.hp = 100;
+                                this.name = name;
+                                this.birthday = birthday;
+                                this.gender = gender;
+                                
+                                this.super();
+                            },
+                            
+                            talk: function () {
+                                console.log('hellow');
+                            }
+                        },
+                    },
+                    
+                    organization: {
+                        set: {
+                            name: null,
+                            
+                            init: function (name, degree) {
+                                this.name = name;
+                                
+                                this.super();
+                            }
+                        }
+                    }
+                },
+                
+                roles: {
+                    student: {
+                        specializationOf: 'person',
+
+                        rules: {
+                            'afterInstantiate': function (e) {
+                                console.log('student instantiated');
+                            }
+                        },
+                        set: {
+                            loanBook: function () {
+                                console.log('book loaned');
+                            }
+                        }
+                    },
+                    
+                    school: {
+                        specializationOf: 'organization',
+                        
+                        set: {
+                            calculateGrades: function () {
+                                console.log('grades calculated');
+                            }
+                        }
+                    }
+                },
+                
+                relators: {
+                    enrollment: {
+                        roles: ['student', 'school'],
+                        set: {
+                            relatorPropertyId: 'enrollment',
+                            number: null,
+                            
+                            _generateEnrollmentId: function () {
+                                return Math.floor(Math.random() * 100000);
+                            },
+                            
+                            init: function (params) {
+                                this.super(params);
+                                
+                                this.number = this._generateEnrollmentId();
+                            }
+                        }
+                    }
+                },
+                
+                phases: {
+                    opened: {
+                        specializationOf: 'enrollment',
+
+                        rules: {
+                            'afterBecome:target': function () {
+                                console.log('tornou-se aberto');
+                            },
+                            
+                            'afterDegenerate:target': function () {
+                                console.log('abandonou aberto');
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'enrollment-progress',
+                            
+                            calculateCredits: function () {
+                                return 'calculating...';
+                            }
+                        }
+                    },
+                    
+                    finished: {
+                        specializationOf: 'enrollment',
+
+                        rules: {
+                            'afterBecome:target': function (e) {
+                                console.log('tornou-se fechado');
+                                e.preventAction();
+                            },
+                            
+                            'beforeDegenerate:target': function (e) {
+                                e.preventAction();
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'enrollment-progress',
+                            
+                            calculateCredits: function () {
+                                return 'calculated';
+                            }
+                        }
+                    },
+                    
+                    dead: {
+                        specializationOf: 'person',
+                        rules: {
+                            'beforeBecome:target': function (e) {
+                                if (e.sender.hp > 0) {
+                                    e.preventAction();
+                                }
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'stages-of-life',
+                            
+                            run: function () {
+                                console.log("can't run, is dead");
+                            }
+                        }
+                    },
+                    
+                    alive: {
+                        specializationOf: 'person',
+                        rules: {
+                            'beforeBecome:target': function (e) {
+                                if (e.sender.hp === 0) {
+                                    e.preventAction();
+                                }
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'stages-of-life',
+                            
+                            run: function () {
+                                console.log("running fast...");
+                            }
+                        }
+                    },
+
+                    onTrial: {
+                        specializationOf: 'student',
+                        rules: {
+                            'beforeBecome:target': function (e) {
+                                console.log('approvement test...');
+                                if (!e.sender.courseCompleted) {
+                                    e.preventAction();
+                                }
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'approvement',
+                            sayApprovement: function () {
+                                console.log("I'm on trial");
+                            }
+                        }
+                    },
+
+                    approved: {
+                        specializationOf: 'student',
+                        rules: {
+                            'beforeBecome:target': function (e) {
+                                console.log('approvement test...');
+                                if (e.sender.courseCompleted) {
+                                    e.preventAction();
+                                }
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'approvement',
+                            sayApprovement: function () {
+                                console.log("I'm approved");
+                            }
+                        }
+                    },
+                }
+            });
+            
+            /*
+            worldLayer = world.new(schoolDomain);
+            
+            i1 = worldLayer.instantiate('item');
+            p1 = worldLayer.instantiate('person');
+            o1 = worldLayer.instantiate('organization', 'UFES');
+            
+            re = worldLayer.relate('enrollment', {
+                'student': p1,
+                'school': o1
+            });
+            */
+            
+        </script>
+        
+    </body>
+</html>

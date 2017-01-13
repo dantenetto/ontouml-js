@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>domain layer test</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script src="../domain.layer.js"></script>
+        
+        <script type="text/javascript">
+            var schoolDomain;
+            
+            schoolDomain = domain.new({
+                kinds: {
+                    person: {
+                        set: {
+                            name: null,
+                            birthday: null,
+                            gender: null,
+                            
+                            init: function (name, birthday, gender) {
+                                this.name = name;
+                                this.birthday = birthday;
+                                this.gender = gender;
+                                
+                                this.super();
+                            },
+                            
+                            talk: function () {
+                                console.log('hellow');
+                            }
+                        },
+                    },
+                    
+                    organization: {
+                        set: {
+                            name: null,
+                            
+                            init: function (name, degree) {
+                                this.name = name;
+                                
+                                this.super();
+                            }
+                        }
+                    }
+                },
+                
+                roles: {
+                    student: {
+                        specializationOf: 'person',
+
+                        set: {
+                            loanBook: function () {
+                                console.log('book loaned');
+                            }
+                        }
+                    },
+                    
+                    school: {
+                        specializationOf: 'organization',
+                        
+                        set: {
+                            calculateGrades: function () {
+                                console.log('grades calculated');
+                            }
+                        }
+                    }
+                },
+                
+                relators: {
+                    enrollment: {
+                        roles: ['student', 'school'],
+                        set: {
+                            number: null,
+                            
+                            _generateEnrollmentId: function () {
+                                return Math.floor(Math.random() * 10000);
+                            }
+                        }
+                    }
+                },
+                
+                phases: {
+                    opened: {
+                        specializationOf: 'enrollment',
+
+                        rules: {
+                            'afterBecome:target':function () {
+                                console.log('tornou-se aberto');
+                            },
+                            
+                            'afterDegenerate:target': function () {
+                                console.log('abandonou aberto');
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'course',
+                            
+                            calculateCredits: function () {
+                                return 'calculating...';
+                            }
+                        }
+                    },
+                    
+                    finished: {
+                        specializationOf: 'enrollment',
+
+                        rules: {
+                            'beforeDegenerate:target': function (e) {
+                                e.preventAction();
+                            }
+                        },
+                        set: {
+                            phaseGroupId: 'course',
+                            
+                            calculateCredits: function () {
+                                return 'calculated';
+                            }
+                        }
+                    }
+                }
+            });
+            
+            
+            var jonh = schoolDomain.kinds.person.new('joao', 21, 'm');
+            var ufes = schoolDomain.kinds.organization.new('UFES');
+        </script>
+        
+    </body>
+</html>

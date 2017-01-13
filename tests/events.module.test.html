@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>events module test</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script type="text/javascript">
+            var publisher, publisher2,
+				ev;
+            
+            ev = events;
+            
+            publisher = ev.publisher.new();
+            
+            publisher.on('click', function (e) {
+				console.log('click', e);
+			});
+			
+			publisher.on('test:a', function (e) {
+				console.log('test a1');
+			});
+			
+			publisher.on('test:a', function (e) {
+				console.log('test a2');
+			});
+			
+			publisher.on('test:b', function (e) {
+				console.log('test b');
+			});
+			
+			publisher.fire('click').fire('test:a');
+			
+			publisher2 = ev.publisher.new();
+			
+			publisher2.copyHandlers(publisher);
+			
+			publisher2.fire('click');
+			
+			publisher.detach('click');
+			
+        </script>
+        
+    </body>
+</html>

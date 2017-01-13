@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>matrimonial domain</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <img src="proof-of-concept.png">
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script type="text/javascript">
+            debugger;
+            
+            var kind = {},
+                phase = {},
+                role = {},
+                relator = {},
+                w1 = {}; //mundo 1
+
+            //Declaração do domínio
+            kind.Person = {
+                age: null,
+                name: null,
+
+                init: function (name, age) {
+                    this.super();
+                    
+                    this.name = name;
+                    this.age = age;
+                }
+            }.basedOn(onto.kind);
+
+            kind.Man = {
+                gender: 'male',
+            }.basedOn(kind.Person);
+
+            kind.Woman = {
+                gender: 'female',
+            }.basedOn(kind.Person);
+
+            //fases de Person
+            phase.Child = {
+                phaseGroupId: 'stages-of-life',
+
+                hasId: false,
+            }.basedOn(onto.phase)
+             .specialize(kind.Person)
+             .on('beforeBecome:target', function (e) {
+                 if (e.sender.age >= 18) e.preventAction();
+             });
+
+            phase.Adult = {
+                phaseGroupId: 'stages-of-life',
+
+                hasId: true,
+            }.basedOn(onto.phase)
+             .specialize(kind.Person)
+             .on('beforeBecome:target', function (e) {
+                 if (e.sender.age < 18) e.preventAction();
+             });
+
+            //roles de Person e as suas especializações
+            role.Partner = {
+            }.basedOn(onto.role)
+             .specialize(phase.Adult);
+
+            role.Husband = {
+                marriageClothe: 'suit',
+            }.basedOn(role.Partner)
+             .specialize(kind.Man);
+
+            role.Wife = {
+                marriageClothe: 'dress',
+            }.basedOn(role.Partner)
+             .specialize(kind.Woman);
+
+            role.Witness = {
+                signDate: null,
+
+                init: function () {
+                    this.signDate = new Date();
+                }
+            }.basedOn(onto.role)
+             .specialize(phase.Adult);
+
+
+            relator.Marriage = {
+                _roleSets: {
+                    husband: role.Husband,
+                    wife: role.Wife,
+                    witness: role.Witness,
+                },
+                relatorPropertyId: 'marriage',
+            }.basedOn(onto.relator)
+             .on('beforeInstantiate', function (e) {
+                 if (!e.data.witness || e.data.witness.length < 2) e.preventAction();
+             });
+
+
+            w1.andy = kind.Man.new('andy', 16);
+            w1.john = kind.Man.new('jonh', 21);
+            w1.jean = kind.Man.new('jean', 28);
+            w1.ana = kind.Woman.new('ana', 25);
+            w1.lia = kind.Woman.new('lia', 17);
+            w1.mia = kind.Woman.new('mia', 26);
+
+            w1.jonhAnaMarriage = relator.Marriage.new({
+                husband: w1.john,
+                wife: w1.ana,
+                witness: [w1.jean, w1.mia]
+            });
+
+            w1.jonhAnaMarriage.underThisRelation(function (entities, relator) {
+                w1.john.isA(role.Husband); //true
+                console.log(w1.john.marriageClothe); //'suit'
+                
+                w1.ana.isA(role.Wife); //true
+                console.log(w1.ana.marriageClothe); //'dress'
+                
+                w1.mia.isA(role.Witness); //true
+                console.log(w1.mia.signDate); //data da criação do relacionamento
+            });
+
+            w1.andyLiaMarriage = relator.Marriage.new({
+                husband: w1.andy,
+                wife: w1.lia,
+                witness: [w1.jean, w1.mia]
+            });
+        </script>
+        
+    </body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<title>ontouml tests</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script src="../ontouml.sets.js"></script>
+        <script type="text/javascript">
+			var kindPerson = {
+				name: null,
+				
+				init: function (name) {
+					this.super();
+
+					this.name = name;
+				}
+			}.basedOnInited(onto.kind);
+			
+			var roleCostumer = {
+				calculateTotal: function () {
+					return this.purchase.calculateTotal();
+				}
+			}.basedOnInited(onto.role)
+			 .specialize(kindPerson);
+            
+            var kindProduct = {
+				name: null,
+				value: null,
+				
+				init: function (name, value) {
+					this.super();
+					
+					this.name = name;
+					this.value = value;
+				}
+				
+			}.basedOnInited(onto.kind);
+            
+            var roleItem = {
+				quantity: null,
+				purchasedValue: null,
+				
+				init: function (quantity) {
+					this.super();
+					
+					quantity && (this.quantity = quantity);
+					this.purchasedValue || (this.purchasedValue = this.value);
+				}
+			}.basedOnInited(onto.role)
+		     .specialize(kindProduct);
+            
+            var relatorPurchase = {
+				relatorPropertyId: 'purchase',
+				_roleSets: {
+					customerOf: roleCostumer,
+					itensOf: roleItem
+				},
+				
+				calculateTotal: function () {
+					var i, size, itens, total;
+					
+					itens = this._relatedParts.itensOf;
+					
+					total = 0;
+					for (i = 0, size = itens.length; i < size; i += 1) {
+						total += itens[i].part.purchasedValue;
+					}
+					
+					return total;
+				}
+			}.basedOnInited(onto.relator);
+			
+			
+			
+			//instanciações
+			var jonh = kindPerson.new('Jonh');
+			var soda = kindProduct.new('Soda', 3.20);
+			var cup = kindProduct.new('Cup', 0.80);
+			
+			
+			var purchase = relatorPurchase.new({
+				customerOf: jonh,
+				itensOf: [
+					soda, cup
+				]
+			});
+			
+        </script>
+        
+    </body>
+</html>

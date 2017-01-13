@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>sets module test</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script type="text/javascript">
+            var person, child, adult, old, p, l = {};
+            
+            person = {
+                age: 15,
+
+                talk: function () {
+                    console.log('uaaaah');
+                }
+            }.basedOn(sets.set);
+            
+            child = {
+                talk: function () {
+                    console.log('gugudada');
+                },
+
+                run: function () {
+                    console.log('pf      pf      pf');
+                },
+            }.basedOn(sets.set);
+            
+            adult = {
+                talk: function () {
+                    console.log('hellow');
+                },
+                
+                run: function () {
+                    console.log('taptaptaptaptap');
+                }
+            }.basedOn(sets.set);
+            
+            old = {
+                talk: function () {
+                    console.log('zzzzz...');
+                },
+                
+                run: function () {
+                    console.log('tap toc      tap toc        tap toc');
+                }
+            }.basedOn(sets.set);
+            
+            
+            child.on('inPain', function () { console.log('buaaaaa...'); });
+            
+            adult.on('beforeBecome:target', function (e) {
+                console.log('beforeBecome adult');
+                
+                if (e.sender.age < 18) {
+                    e.preventAction();
+                }
+            });
+            
+            old.on('afterBecome', function (e) {
+                console.log('afterBecome old');
+                
+                e.sender.age = 65;
+            });
+            
+            p = person.new();
+            p.become(child);
+
+
+            console.log('-------------');
+            l.simpleSet = {
+                simpleTalk: function () {
+                    console.log('simple talk');
+                }
+            }.basedOn(sets.set)
+             .on(['beforeBecome:target',
+                  'beforeBecome:base',
+                  'afterBecome:target',
+                  'afterBecome:base',
+                  'beforeDegenerate:target',
+                  'beforeDegenerate:base',
+                  'afterDegenerate:target',
+                  'afterDegenerate:base'],
+                function (e) {
+                    console.log('simpleTalk', e, arguments);
+                });
+
+            person.on(['beforeInstantiate',
+                'afterInstantiate',
+                'beforeSelfDestruct',
+                'afterSelfDestruct'],
+                function (e) {
+                    console.log('person', e, arguments);
+            });
+
+            l.p1 = person.new();
+
+            l.p1.on(['beforeBecome:target',
+                  'beforeBecome:base',
+                  'afterBecome:target',
+                  'afterBecome:base',
+                  'beforeDegenerate:target',
+                  'beforeDegenerate:base',
+                  'afterDegenerate:target',
+                  'afterDegenerate:base'],
+                function (e) {
+                    console.log('p1', e);
+            });
+
+            console.log('--> become simpleSet');
+            l.p1.become(l.simpleSet);
+
+            l.p1.simpleTalk();
+            console.log('--> degenerate simpleSet');
+            l.p1.degenerate(l.simpleSet);
+
+            l.p1.selfDestruct();
+        </script>
+        
+    </body>
+</html>

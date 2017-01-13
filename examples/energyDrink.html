@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>energy drink example</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    </head>
+    <body>
+        <script src="../core.js"></script>
+        <script src="../events.module.js"></script>
+        <script src="../sets.module.js"></script>
+        <script type="text/javascript">
+            debugger;
+            //o set abaixo representa um humano que caminha
+            //até uma reserva mínima de energia
+            var human = {
+                stamina: null,
+
+                init: function (stamina) {
+                    this.stamina = stamina || 100;
+                },
+
+                walk: function () {
+                    if (this.stamina > 10) {
+                        this.stamina -= 1;
+                        console.log("walking");
+                    } else {
+                        console.log("I’m too tired...");
+                    }
+                }
+            }.basedOn(sets.set);
+
+            //representa um humano que consegue caminhar
+            //além do limite razoável
+            var boostedHuman = {
+                boostPower: null,
+
+                init: function (boostPower) {
+                    this.boostPower = boostPower || 10;
+                },
+
+                walk: function () {
+                    this.stamina -= 1;
+                    this.boostPower -= 1;
+                    console.log('walking');
+                    if (this.boostPower <= 0) {
+                        this.degenerate(boostedHuman);
+                    }
+                }
+
+            }.basedOn(sets.set);
+             
+            //representa uma bebida energética
+            var energyDrink = {
+                label: null,
+                boostPower: null,
+
+                init: function (label, boostPower) {
+                    this.label = label;
+                    this.boostPower = boostPower || 10;
+                },
+
+                drunkBy: function (guy) {
+                    if (guy.isA(boostedHuman)) {
+                        guy.boostPower += this.boostPower;
+                    } else {
+                        guy.become(boostedHuman, {
+                            init: this.boostPower
+                        });
+                    }
+                    this.boostPower = 0;
+                }
+
+            }.basedOn(sets.set);
+
+            //instanciando um humano e uma bebida
+            var tiredPaul = human.new(5);
+            var niceDrink = energyDrink.new("Red Blue", 1);
+
+            tiredPaul.walk(); //”I’m too tired”
+
+            niceDrink.drunkBy(tiredPaul);
+
+            tiredPaul.isA(boostedHuman); //true
+            tiredPaul.walk(); //”walking”
+
+            tiredPaul.isA(boostedHuman); //false
+            tiredPaul.walk(); //”I’m too tired”
+
+        </script>
+        
+    </body>
+</html>
